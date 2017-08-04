@@ -23,9 +23,50 @@ class TravianGuerrillaApi:
     def show_actual_page(self):
         page = self.browser.parsed
         print(page)
+    
+    def show_available_units(self,solar_id):
+        url = 'https://%s.travian.net/build.php?id=%s'%(self.server,solar_id)
+        self.open_page(url)
+        
+        soup = BeautifulSoup(str(self.browser.parsed), 'html.parser')
+        units = soup.find('div',{'class':'buildActionOverview trainUnits'}).find_all('div', {'class':'details'})
+        for item in units:
+            name = item.find('div',{'class':'tit'}).find('img')['alt']
+            quant_available = item.find('a',{'onclick':re.compile(r"div.details")}).getText()
+            print("%s -> %s Available"%(name,quant_available))
+
+    def create_units(self, solar_id, t1=0,t2=0,t3=0,t4=0,t5=0):
+        url = 'https://%s.travian.net/build.php?id=%s'%(self.server,solar_id)
+        self.open_page(url)
+        try:
+            search_form = self.browser.get_form(action=re.compile(r'build.php'))
+            search_form.fields["t1"].value = t1
+            self.browser.submit_form(search_form)
+            return "Creating.."
+        except:
+            return "Unavailable"
+
+    def get_next_atack(self):
+        url = 'https://%s.travian.net/dorf1.php'%(self.server)
+        self.open_page(url)
+        soup = BeautifulSoup(str(self.browser.parsed), 'html.parser')
+        seconds = soup.find('table',{'id':'movements'}).find('span',{'class':'timer'})['value']
+        m, s = divmod(int(seconds), 60)
+        h, m = divmod(m, 60)
+
+        print('%s -> %d:%02d:%02d'%(seconds, h, m, s))
 
     def open_page(self, url):
-        self.browser.open(url)
+        try:
+            self.browser.open(url)
+        except:
+            print("problem on open_page")
+
+    def is_busy(self):
+        if self.actual_queue() == "Empty queue":
+            return False
+        else:
+            return True
 
     def actual_queue(self):
         url = 'https://%s.travian.net/dorf1.php'%(self.server)
@@ -41,17 +82,20 @@ class TravianGuerrillaApi:
                 print(div_duration.getText().replace('"','').replace('\t','').strip())
                 return ("%s -> %s"%(div_name.getText().replace('"','').replace('\t','').strip(),div_duration.getText().replace('"','').strip()))
         except:
-            print("Empty queue")
             return "Empty queue"
+
     def build_resource(self, resource_id):
-        try:
-            self.open_page('https://%s.travian.net/build.php?id=%s'%(self.server, resource_id))
-            onclick = self.browser.select('.green.build')[0].attrs['onclick']
-            link = re.match(".*'(.*)'.*", onclick).group(1)
-            url = 'https://%s.travian.net/%s'%(self.server, link)
-            self.open_page(url)
-        except:
-            print("Full Queue")
+        if not self.is_busy():
+            try:
+                self.open_page('https://%s.travian.net/build.php?id=%s'%(self.server, resource_id))
+                onclick = self.browser.select('.green.build')[0].attrs['onclick']
+                link = re.match(".*'(.*)'.*", onclick).group(1)
+                url = 'https://%s.travian.net/%s'%(self.server, link)
+                self.open_page(url)
+            except:
+                return "Unavailable"
+        else:
+            return "Full queue"
 
     def show_avilable_building(self,solar_id,category_id=1):
         self.open_page('https://%s.travian.net/build.php?id=%s&category=%s'%(self.server, solar_id, category_id))
@@ -73,8 +117,9 @@ class TravianGuerrillaApi:
             code = re.findall('c=.*\Z',re.match(".*'(.*)'.*",soup.find("button",{'class':'green new'}).attrs["onclick"]).group(1))[0][2:]
         
             self.open_page('https://%s.travian.net/dorf2.php?a=%s&id=%s&c=%s'%(self.server, building_id, solar_id, code))
+            return 'Ok'
         except:
-            print("Full Queue")
+            return 'Unavailable'
 
     def upgrade_building(self, solar_id):
         try:
@@ -84,7 +129,7 @@ class TravianGuerrillaApi:
             url = 'https://%s.travian.net/%s'%(self.server, link)
             self.open_page(url)
         except:
-            print("Full Queue/Unavailable")
+           return "Unavailable"
 
 
     def get_actual_production(self):
@@ -141,6 +186,20 @@ class TravianGuerrillaApi:
                 actual_resources_list.append(Resource(resource,ammount))
         return actual_resources_list
 
+    def help(self):
+        methods = '''Methods:
+        loggin(user, pasword)
+        actual_queue()
+        build_resource(resource_id)
+        show_avilable_building(solar_id,category_id=1)
+        build_building(solar_id, building_id)
+        upgrade_building(solar_id)
+        get_actual_production()
+        map_resources()
+        map_buildings()
+        actual_resources()
+'''
+        return(methods)
 
 class Resource:
     def __init__(self,resource,amount):
