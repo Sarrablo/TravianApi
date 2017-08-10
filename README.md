@@ -5,6 +5,8 @@ Guerrilla Api for Travian. Why Guerrilla? Because is not oficcial, scraping bass
 Actually, i have implemented the construction functionality. You can build resources, build builgings (no, it's not redundant), consult actual production, consult actual queue, map resoures and map buildings.
 
 # Methods:
+
+## General
 <br/>
 Constructor:<br/>
 
@@ -16,6 +18,7 @@ Constructor:<br/>
 <br/>Log in the travian webpage ( constructor do that)
 <br/>
 
+## Resources and buildings
 ```actual_queue()```
 <br/>Show the actual construction queue
 <br/>
@@ -44,12 +47,13 @@ Constructor:<br/>
 ```actual_resources()```
 <br/> Show the actual balance of the resources <br/>
 
+## Units production
 ```show_available_units(solar_id)```
 <br/> Show the actual available units (infantry) <br/>
 
 ```create_units(solar_id,t1,t2,t3)```
 <br/> Create units in the barracks, only infantry (on construction)<br/>
 
-
+## Units movements
 ```get_next_atack()```
 <br/> Prints the time to the next atack (on construction)<br/>
