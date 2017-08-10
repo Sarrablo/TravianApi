@@ -8,8 +8,7 @@ Actually, i have implemented the construction functionality. You can build resou
 <br/>
 Constructor:<br/>
 
-```api = TravianGuerrillaApi("user_example","password_example", "server_example","domain_example)
-api = TravianGuerrillaApi("user","password", "tx3","net")```
+```api = TravianGuerrillaApi("user_example","password_example", "server_example","domain_example")```
 
 <br/>Initialize the api<br/>
 
