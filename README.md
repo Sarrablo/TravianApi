@@ -9,7 +9,8 @@ Actually, i have implemented the construction functionality. You can build resou
 Constructor:<br/>
 
 ```api = TravianGuerrillaApi("user_example","password_example", "server_example","domain_example)
--> api = TravianGuerrillaApi("user","password", "tx3","net")```
+api = TravianGuerrillaApi("user","password", "tx3","net")```
+
 <br/>Initialize the api<br/>
 
 ```loggin(user, pasword)```
