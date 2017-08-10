@@ -44,3 +44,12 @@ Constructor:<br/>
 ```actual_resources()```
 <br/> Show the actual balance of the resources <br/>
 
+```show_available_units(solar_id)```
+<br/> Show the actual available units (infantry) <br/>
+
+```create_units(solar_id,t1,t2,t3)```
+<br/> Create units in the barracks, only infantry (on construction)<br/>
+
+
+```get_next_atack()```
+<br/> Prints the time to the next atack (on construction)<br/>
