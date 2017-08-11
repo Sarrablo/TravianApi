@@ -46,6 +46,32 @@ class TravianGuerrillaApi:
             return "Creating.."
         except:
             return "Unavailable"
+    def send_atack(self, coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0):
+        url = 'https://%s.travian.%s/build.php?id=39&tt=2'%(self.server,self.domain)
+        self.open_page(url)
+        try:
+            search_form = self.browser.get_form(action=re.compile(r'build.php'))
+            dic = {'t1':t1,'t2':t2,'t3':t3,'t4':t4,'t5':t5,'t6':t6,'t7':t7,'t8':t8,'t9':t9,'t10':t10}
+            for key, value in dic.items():
+                try:
+                    search_form.fields[key].value = value
+                except:
+                    pass
+            
+            search_form.fields['x'].value = coord[0]
+            search_form.fields['y'].value = coord[1]
+            search_form.fields['c'].value = mode
+            self.browser.submit_form(search_form)
+            
+            try:
+                search_form = self.browser.get_form(action=re.compile(r'build.php'))
+                self.browser.submit_form(search_form)
+                print("Ok")
+            except:
+                print("Unavailable second layer")
+        except:
+            print("Unavailable general")
+
 
     def get_next_atack(self):
         url = 'https://%s.travian.%s/dorf1.php'%(self.server,self.domain)
