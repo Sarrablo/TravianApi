@@ -61,8 +61,8 @@ Constructor:<br/>
 ```send_attack(coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0)```
 <br/> Send attack to the specified coordenates:<br/>
 - Usage
--- coord -> ['88','-55']
--- mode:
---- '2' -> reinforcement
---- '3' -> normal attack
---- '4' -> raid attack
+ - coord -> ['88','-55']
+ - mode:
+   - '2' -> reinforcement
+   - '3' -> normal attack
+   - '4' -> raid attack
