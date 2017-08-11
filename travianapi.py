@@ -35,6 +35,17 @@ class TravianGuerrillaApi:
             name = item.find('div',{'class':'tit'}).find('img')['alt']
             quant_available = item.find('a',{'onclick':re.compile(r"div.details")}).getText()
             print("%s -> %s Available"%(name,quant_available))
+    
+    def get_actual_units(self):
+        url = 'https://%s.travian.%s/dorf1.php'%(self.server,self.domain)
+        self.open_page(url)
+        troops = {}
+        for item in self.browser.find('table',{'id':'troops'}).find_all('tr'):
+            try:
+                troops[item.find('td',{'class':'un'}).getText()] = item.find('td',{'class':'num'}).getText()
+            except:
+                pass
+        return troops
 
     def create_units(self, solar_id, t1=0,t2=0,t3=0,t4=0,t5=0):
         url = 'https://%s.travian.%s/build.php?id=%s'%(self.server,self.domain,solar_id)
