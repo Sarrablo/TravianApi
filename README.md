@@ -54,6 +54,8 @@ Constructor:<br/>
 ```create_units(solar_id,t1,t2,t3)```
 <br/> Create units in the barracks, only infantry (on construction)<br/>
 
+```get_actual_units()```
+<br/> Returns a dict with {'troop_name':'number of units'}<br/>
 ## Units movements
 ```get_next_atack()```
 <br/> Prints the time to the next atack (on construction)<br/>
@@ -66,3 +68,5 @@ Usage
    - '2' -> reinforcement
    - '3' -> normal attack
    - '4' -> raid attack
+<br/>
+
