@@ -46,7 +46,7 @@ class TravianGuerrillaApi:
             return "Creating.."
         except:
             return "Unavailable"
-    def send_atack(self, coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0):
+    def send_attack(self, coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0):
         url = 'https://%s.travian.%s/build.php?id=39&tt=2'%(self.server,self.domain)
         self.open_page(url)
         try:
