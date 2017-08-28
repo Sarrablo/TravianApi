@@ -1,6 +1,7 @@
 from robobrowser import RoboBrowser
 import re
 from bs4 import BeautifulSoup
+
 class TravianGuerrillaApi:
 
     def __init__(self, user, pasw, server, domain='net'):
@@ -14,7 +15,7 @@ class TravianGuerrillaApi:
         url = 'https://%s.travian.%s/'%(self.server,self.domain)
         self.browser.open(url)
         logging_form = self.browser.get_form(action="dorf1.php")
-        
+
 
         logging_form.fields["password"].value=pasw
         logging_form.fields["name"].value=user
@@ -24,18 +25,28 @@ class TravianGuerrillaApi:
     def show_actual_page(self):
         page = self.browser.parsed
         print(page)
-    
+
+    def list_villages(self):
+        url = 'https://%s.travian.%s/dorf1.php'%(self.server,self.domain)
+        self.open_page(url)
+        for item in self.browser.find('div', {'id':'sidebarBoxVillagelist'}).find('div',{'class':'innerBox content'}).find_all('li'):
+            print(item.find('a')['href'])
+
+    def set_village(self, village_id):
+        url = 'https://%s.travian.%s/dorf1.php?newdid=%s&'%(self.server,self.domain, village_id)
+        self.open_page(url)
+
     def show_available_units(self,solar_id):
         url = 'https://%s.travian.%s/build.php?id=%s'%(self.server, self.domain,solar_id)
         self.open_page(url)
-        
+
         soup = BeautifulSoup(str(self.browser.parsed), 'html.parser')
         units = soup.find('div',{'class':'buildActionOverview trainUnits'}).find_all('div', {'class':'details'})
         for item in units:
             name = item.find('div',{'class':'tit'}).find('img')['alt']
             quant_available = item.find('a',{'onclick':re.compile(r"div.details")}).getText()
             print("%s -> %s Available"%(name,quant_available))
-    
+
     def get_actual_units(self):
         url = 'https://%s.travian.%s/dorf1.php'%(self.server,self.domain)
         self.open_page(url)
@@ -47,16 +58,22 @@ class TravianGuerrillaApi:
                 pass
         return troops
 
-    def create_units(self, solar_id, t1=0,t2=0,t3=0,t4=0,t5=0):
+    def create_units(self, solar_id, t1=0,t2=0,t3=0):
         url = 'https://%s.travian.%s/build.php?id=%s'%(self.server,self.domain,solar_id)
         self.open_page(url)
         try:
             search_form = self.browser.get_form(action=re.compile(r'build.php'))
-            search_form.fields["t1"].value = t1
+            dic = {'t1':t1,'t2':t2,'t3':t3}
+            for key, value in dic.items():
+                try:
+                    search_form.fields[key].value = value
+                except:
+                    pass
             self.browser.submit_form(search_form)
             return "Creating.."
         except:
             return "Unavailable"
+
     def send_attack(self, coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0):
         url = 'https://%s.travian.%s/build.php?id=39&tt=2'%(self.server,self.domain)
         self.open_page(url)
@@ -68,12 +85,12 @@ class TravianGuerrillaApi:
                     search_form.fields[key].value = value
                 except:
                     pass
-            
+
             search_form.fields['x'].value = coord[0]
             search_form.fields['y'].value = coord[1]
             search_form.fields['c'].value = mode
             self.browser.submit_form(search_form)
-            
+
             try:
                 search_form = self.browser.get_form(action=re.compile(r'build.php'))
                 self.browser.submit_form(search_form)
@@ -97,7 +114,8 @@ class TravianGuerrillaApi:
     def open_page(self, url):
         try:
             self.browser.open(url)
-        except:
+        except Exception as e:
+            print(e)
             print("problem on open_page")
 
     def is_busy(self):
@@ -128,7 +146,7 @@ class TravianGuerrillaApi:
                 self.open_page('https://%s.travian.%s/build.php?id=%s'%(self.server,self.domain, resource_id))
                 onclick = self.browser.select('.green.build')[0].attrs['onclick']
                 link = re.match(".*'(.*)'.*", onclick).group(1)
-                url = 'https://%s.travian.net/%s'%(self.server, link)
+                url = 'https://%s.travian.%s/%s'%(self.server, self.domain, link)
                 self.open_page(url)
             except:
                 return "Unavailable"
@@ -149,11 +167,11 @@ class TravianGuerrillaApi:
                 pass
 
     def build_building(self, solar_id, building_id ):
-        try:            
+        try:
             self.open_page('https://%s.travian.%s/build.php?id=%s&category=1'%(self.server,self.domain, solar_id))
             soup = BeautifulSoup(str(self.browser.parsed), 'html.parser')
             code = re.findall('c=.*\Z',re.match(".*'(.*)'.*",soup.find("button",{'class':'green new'}).attrs["onclick"]).group(1))[0][2:]
-        
+
             self.open_page('https://%s.travian.%s/dorf2.php?a=%s&id=%s&c=%s'%(self.server,self.domain, building_id, solar_id, code))
             return 'Ok'
         except:
@@ -184,7 +202,7 @@ class TravianGuerrillaApi:
                 ammount = amo.getText().strip()
             if res != None and amo != None:
                 print('%s -> %s'%(resource,ammount))
-    
+
     def map_resources(self):
         url = 'https://%s.travian.%s/dorf1.php'%(self.server,self.domain)
         self.open_page(url)
