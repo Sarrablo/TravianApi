@@ -29,8 +29,10 @@ class TravianGuerrillaApi:
     def list_villages(self):
         url = 'https://%s.travian.%s/dorf1.php'%(self.server,self.domain)
         self.open_page(url)
+        villages = {}
         for item in self.browser.find('div', {'id':'sidebarBoxVillagelist'}).find('div',{'class':'innerBox content'}).find_all('li'):
-            print(item.find('a')['href'])
+            villages[item.find('a').find('div',{'class':'name'}).getText()] = re.search("\?.+=(\d+)&",item.find('a')['href']).group(1)
+        return villages
 
     def set_village(self, village_id):
         url = 'https://%s.travian.%s/dorf1.php?newdid=%s&'%(self.server,self.domain, village_id)
