@@ -70,3 +70,9 @@ Usage
    - '4' -> raid attack
 <br/>
 
+## Village management
+```list_villages()```
+<br/> Return a dict of village and id<br/>
+
+```set_village(village_id)```
+<br/> set the village to manage <br/>
