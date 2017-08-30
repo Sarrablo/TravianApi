@@ -60,6 +60,26 @@ class TravianGuerrillaApi:
                 pass
         return troops
 
+    def get_actual_units_by_tier(self):
+        url = 'https://%s.travian.%s/build.php?tt=1&gid=16'%(self.server,self.domain)
+        self.open_page(url)
+        dic = {'t1':0,'t2':0,'t3':0,'t4':0,'t5':0,'t6':0,'t7':0,'t8':0,'t9':0,'t10':0}
+        for item in self.browser.find_all('tbody',{'class':'units last'}):
+            troops = item.find_all('td')
+            dic['t1'] += int(troops[0].getText())
+            dic['t2'] += int(troops[1].getText())
+            dic['t3'] += int(troops[2].getText())
+            dic['t4'] += int(troops[3].getText())
+            dic['t5'] += int(troops[4].getText())
+            dic['t6'] += int(troops[5].getText())
+            dic['t7'] += int(troops[6].getText())
+            dic['t8'] += int(troops[7].getText())
+            dic['t9'] += int(troops[8].getText())
+            dic['t10'] += int(troops[9].getText())
+        return dic
+
+
+
     def create_units(self, solar_id, t1=0,t2=0,t3=0):
         url = 'https://%s.travian.%s/build.php?id=%s'%(self.server,self.domain,solar_id)
         self.open_page(url)
@@ -76,8 +96,9 @@ class TravianGuerrillaApi:
         except:
             return "Unavailable"
 
+
     def send_attack(self, coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0):
-        url = 'https://%s.travian.%s/build.php?id=39&tt=2'%(self.server,self.domain)
+        url = 'https://%s.travian.%s/build.php?gid=16&tt=2'%(self.server,self.domain)
         self.open_page(url)
         try:
             search_form = self.browser.get_form(action=re.compile(r'build.php'))
@@ -138,9 +159,18 @@ class TravianGuerrillaApi:
                 print(div_name.getText().replace('"','').strip())
                 div_duration = soup.find('div',{'class':'buildDuration'})
                 print(div_duration.getText().replace('"','').replace('\t','').strip())
-                return ("%s -> %s"%(div_name.getText().replace('"','').replace('\t','').strip(),div_duration.getText().replace('"','').strip()))
+                return "%s | %s"%(div_name.getText().replace('"','').replace('\t','').strip(),div_duration.getText().replace('"','').strip())
         except:
             return "Empty queue"
+
+    def busy_until(self):
+        out = self.actual_queue()
+        if out != "Empty queue":
+
+            build, time = out.split('|')
+            ftr = [3600,60,1]
+            hour = re.match('(.*) hrs.',time).group(1)
+            return sum([a*b for a,b in zip(ftr, map(int,hour.split(':')))])
 
     def build_resource(self, resource_id):
         if not self.is_busy():
@@ -279,6 +309,35 @@ class TravianGuerrillaApi:
                 pass
 
         return Alliance(info, members)
+
+    def show_land(self, coord_x, coord_y):
+        url = 'https://%s.travian.%s/position_details.php?x=%s&y=%s'%(self.server,self.domain, coord_x, coord_y)
+        self.open_page(url)
+
+        if self.browser.find('div',{'id':'map_details'}) == None:
+            return "Wildernes"
+        else:
+            if self.browser.find('div',{'id':'map_details'}).find('table',{'id':'village_info'}) == None:
+                return "Abandoned valley"
+            else:
+                village_info = self.browser.find('div',{'id':'map_details'}).find('table',{'id':'village_info'}).find_all('tr')
+                data = {}
+                for item in village_info:
+                    data[item.find('th').getText()]= item.find('td').getText()
+                if self.browser.find('div',{'id':'tileDetails'}).find('div',{'class':'options'}).find('span',{'class':'a arrow disabled'}) == None:
+                        data['Raidable']=True
+                        data['Until_safe']=''
+                else:
+                    if self.browser.find('div',{'id':'tileDetails'}).find('div',{'class':'options'}).find('span',{'class':'a arrow disabled'}).getText() != "Send troops.":
+                        data['Raidable']=True
+                        data['Until_safe']=''
+                    else:
+                        data['Raidable']=False
+                        data['Until_safe']=re.search('until (.*)',self.browser.find('div',{'id':'tileDetails'}).find('div',{'class':'options'}).find('span',{'class':'a arrow disabled'})['title']).group(1)
+
+
+
+                return data
 
     def help(self):
         methods = '''Methods:
