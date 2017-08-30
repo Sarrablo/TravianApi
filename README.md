@@ -1,5 +1,7 @@
 # TravianApi
 Guerrilla Api for Travian. Why Guerrilla? Because is not oficcial, scraping bassed api. 
+
+<br/> WARNING: If u use the api, you can be baneated from game. It's for educational porpouses only.
  
 ## What can i do with that?
 Actually, i have implemented the construction functionality. You can build resources, build builgings (no, it's not redundant), consult actual production, consult actual queue, map resoures and map buildings.
@@ -21,6 +23,10 @@ Constructor:<br/>
 ## Resources and buildings
 ```actual_queue()```
 <br/>Show the actual construction queue
+<br/>
+
+```busy_until()```
+<br/>Return the seconds to complete the construction queue
 <br/>
 
 ```build_resource(resource_id)```
@@ -56,9 +62,11 @@ Constructor:<br/>
 
 ```get_actual_units()```
 <br/> Returns a dict with {'troop_name':'number of units'}<br/>
+
+```get_actual_units_by_tier()```
+<br/> Returns a dict with {'tier':'number of units'}<br/>
+
 ## Units movements
-```get_next_atack()```
-<br/> Prints the time to the next atack (on construction)<br/>
 
 ```send_attack(coord, mode='4', t1=0, t2=0, t3=0, t4=0, t5=0, t6=0, t7=0, t8=0, t9=0, t10=0)```
 <br/> Send attack to the specified coordenates:<br/>
@@ -76,3 +84,10 @@ Usage
 
 ```set_village(village_id)```
 <br/> set the village to manage <br/>
+
+## World infromation
+```get_alliance(alliance_id)```
+<br/> Returns an Alliance object with information of the ally and their members <br/>
+
+```show_land(coord_x, coord_y)```
+<br/> Return inormation about the selected land <br/>
