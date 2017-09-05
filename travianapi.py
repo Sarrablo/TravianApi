@@ -79,6 +79,23 @@ class TravianGuerrillaApi:
         return dic
 
 
+    def get_village_units_by_tier(self):
+        url = 'https://%s.travian.%s/build.php?tt=1&gid=16'%(self.server,self.domain)
+        self.open_page(url)
+        dic = {'t1':0,'t2':0,'t3':0,'t4':0,'t5':0,'t6':0,'t7':0,'t8':0,'t9':0,'t10':0}
+        troops = self.browser.find('table',{'class':'troop_details'}).find_all('tbody',{'class':'units last'})[0].find_all('td')
+        dic['t1'] += int(troops[0].getText())
+        dic['t2'] += int(troops[1].getText())
+        dic['t3'] += int(troops[2].getText())
+        dic['t4'] += int(troops[3].getText())
+        dic['t5'] += int(troops[4].getText())
+        dic['t6'] += int(troops[5].getText())
+        dic['t7'] += int(troops[6].getText())
+        dic['t8'] += int(troops[7].getText())
+        dic['t9'] += int(troops[8].getText())
+        dic['t10'] += int(troops[9].getText())
+        return dic
+
 
     def create_units(self, solar_id, t1=0,t2=0,t3=0):
         url = 'https://%s.travian.%s/build.php?id=%s'%(self.server,self.domain,solar_id)
@@ -169,7 +186,7 @@ class TravianGuerrillaApi:
 
             build, time = out.split('|')
             ftr = [3600,60,1]
-            hour = re.match('(.*) hrs.',time).group(1)
+            hour = re.match('(.*) h',time).group(1)
             return sum([a*b for a,b in zip(ftr, map(int,hour.split(':')))])
 
     def build_resource(self, resource_id):
@@ -177,9 +194,14 @@ class TravianGuerrillaApi:
             try:
                 self.open_page('https://%s.travian.%s/build.php?id=%s'%(self.server,self.domain, resource_id))
                 onclick = self.browser.select('.green.build')[0].attrs['onclick']
+                print(onclick)
                 link = re.match(".*'(.*)'.*", onclick).group(1)
-                url = 'https://%s.travian.%s/%s'%(self.server, self.domain, link)
-                self.open_page(url)
+                print(link)
+                if link != 'disabled':
+                    url = 'https://%s.travian.%s/%s'%(self.server, self.domain, link)
+                    self.open_page(url)
+                else:
+                    raise Exception('Level 1')
             except:
                 return "Unavailable"
         else:
@@ -339,6 +361,46 @@ class TravianGuerrillaApi:
 
                 return data
 
+    def send_resources(self, coord, r1 = 0, r2 = 0, r3 = 0, r4 = 0):
+        url = 'https://ts80.travian.com/build.php?t=5&id=31'
+        self.open_page(url)
+        ajax = re.match(".* = \'(.*)\'",self.browser.find('script').getText().split('\n')[1]).group(1)
+        data = {'cmd':'prepareMarketplace',
+                'r1':r1,
+                'r2':r2 ,
+                'r3':r3,
+                'r4':r4,
+                'dname':''  ,
+                'x':coord[0],
+                'y':coord[1],
+                'id': self.browser.find('form').find('input',{'id':'id'})['value'],
+                't':self.browser.find('form').find('input',{'id':'t'})['value'],
+                'x2':'1',
+                'ajaxToken':ajax}
+        response = self.browser.session.post("https://ts80.travian.com/ajax.php?cmd=prepareMarketplace",data=data)
+        soup = BeautifulSoup(response.json()['response']['data']['formular'], 'html.parser')
+        resp = {}
+        for item in soup.find_all('input'):
+            resp[item['id']]=item['value']
+        resp['r1']=r1
+        resp['r2']=r2
+        resp['r3']=r3
+        resp['r4']=r4
+        resp['ajaxToken']=ajax
+        response = self.browser.session.post("https://ts80.travian.com/ajax.php?cmd=prepareMarketplace",data=resp)
+
+
+    def list_report(self):
+        url = 'https://%s.travian.%s/berichte.php'%(self.server,self.domain)
+        self.open_page(url)
+        reports = {}
+        for item in self.browser.find('table',{'id':'overview'}).find('tbody').find_all('tr'):
+            if item.find('img',{'alt':'unread'}) != None:
+                tag = item.find('div',{'class':''}).find('a').getText()
+                link = item.find('div',{'class':''}).find('a')['href']
+                reports[tag] = link
+        return reports
+
     def help(self):
         methods = '''Methods:
         loggin(user, pasword)
@@ -364,6 +426,10 @@ class Alliance:
         self.info = info
         self.members = members
 
+class Report:
+    def __init__(self, atack, defense):
+        self.atack = atack
+        self.defense = defense
 class User:
     def __init__(self, name, tribe, online, population, villages):
         self.name = name
